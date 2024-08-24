@@ -3,11 +3,25 @@ import styles from "./page.module.css";
 
 export default function Home() {
   return (
-    <>
-    <h1 className="text-4xl">Home Page</h1>
-    <p>Lorem ipsum dolor, sit amet consectetur adipisicing elit. In hic cupiditate voluptatum rerum reiciendis tempora autem sunt quaerat. Neque magni quis veritatis illo cupiditate non! Hic aliquam nesciunt necessitatibus tenetur!
-    Maxime quo dolor qui amet? Enim quae perspiciatis sapiente doloribus cum ducimus libero consequuntur necessitatibus neque a assumenda reprehenderit culpa ipsa, minima ullam, aspernatur nemo quis! Molestias nostrum voluptate aut.
-    Dolorem architecto sint, sed quas nostrum esse natus harum reprehenderit autem blanditiis adipisci. Iste, illo necessitatibus. Accusantium numquam maiores rerum dolorum veniam, at officiis dignissimos, et quasi in ut blanditiis.</p>
-    </>
+    <div className="w-[400px] h-[400px] rounded-lg bg-blue-500 flex justify-center items-center shadow-2xl">
+      <form
+        action="/user"
+        method="post"
+        className="flex flex-col justify-center items-center"
+      >
+        <Image src="/img/teenoilogo.jpg" alt="logo" width={100} height={100} />
+        <input
+          className="w-[200px] h-[30px] my-2 px-2 rounded-md text-sm"
+          type="text"
+        />
+        <input
+          className="w-[200px] h-[30px] my-2 px-2 rounded-md text-sm"
+          type="password"
+        />
+        <button className="w-[100px] h-[30px] bg-blue-300 rounded-md my-5 font-semibold">
+          Login
+        </button>
+      </form>
+    </div>
   );
 }
