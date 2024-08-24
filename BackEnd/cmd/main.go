@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"os"
 
 	"github.com/JongSinister/TeeYai_2024/config"
 	// "github.com/JongSinister/TeeYai_2024/routes"
@@ -11,8 +12,13 @@ import (
 )
 
 func main() {
+    // pwd, err := os.Getwd()
+    // if err != nil {
+    //     panic(err)
+    // }
+
     // Load environment variables from .env file
-    if err := godotenv.Load(); err != nil {
+    if err := godotenv.Load("../config/.env"); err != nil {
         log.Fatalf("Error loading .env file: %v", err)
     }
 
@@ -27,5 +33,6 @@ func main() {
     // routes.SetupRoutes(app)
 
     // Start server
-    log.Fatal(app.Listen(":8080"))
+    port := os.Getenv("PORT")
+    log.Fatal(app.Listen("localhost:" + port))
 }
