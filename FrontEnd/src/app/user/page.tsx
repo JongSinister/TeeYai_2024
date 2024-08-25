@@ -1,9 +1,9 @@
-import FoodItem from "@/components/FoodItem";
+import styles from "../page.module.css";
 import FoodList from "@/components/FoodList";
 
 export default function UserPage() {
     return (
-        <div className="">
+        <div className={styles.main}>
             <FoodList/>
         </div>
     );

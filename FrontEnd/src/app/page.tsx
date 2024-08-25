@@ -3,6 +3,7 @@ import styles from "./page.module.css";
 
 export default function Home() {
   return (
+    <div className={styles.main}>
     <div className="w-[400px] h-[400px] rounded-lg bg-blue-500 flex justify-center items-center shadow-2xl">
       <form
         action="/user"
@@ -22,6 +23,7 @@ export default function Home() {
           Login
         </button>
       </form>
+    </div>
     </div>
   );
 }
