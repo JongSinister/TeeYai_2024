@@ -9,4 +9,5 @@ func OrderRoutes(router fiber.Router) {
 	router.Get("/", controllers.GetOrders)
 	router.Post("/", controllers.AddOrder)
 	router.Get("/:id", controllers.GetOrder)
+	router.Delete("/:id", controllers.DeleteOrder)
 }

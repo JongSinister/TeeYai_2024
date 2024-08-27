@@ -85,3 +85,26 @@ func AddOrder(c *fiber.Ctx) error {
 	order.OrderID = res.InsertedID.(primitive.ObjectID)
 	return c.Status(fiber.StatusCreated).JSON(order)
 }
+
+
+//@desc    Delete order by ID
+//@route   DELETE /api/v1/orders/:id
+//@access  Private
+func DeleteOrder(c *fiber.Ctx) error {
+	id := c.Params("id")
+
+	objectID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).SendString("Invalid ID format")
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	_, err = config.DB.Collection(orderCollection).DeleteOne(ctx, bson.M{"_id": objectID})
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
+	}
+
+	return c.SendString("Order deleted successfully")
+}

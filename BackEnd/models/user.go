@@ -7,12 +7,13 @@ import (
 )
 
 type User struct {
-    UserID    primitive.ObjectID `bson:"_id,omitempty"`
-    Name      string             `bson:"name" validate:"required"`
-    Email     string             `bson:"email" validate:"required"`
-    Role      string             `bson:"role,omitempty"`
-    Password  string             `bson:"password" validate:"required"`
-    CreatedAt primitive.DateTime `bson:"created_at,omitempty"`
+    UserID    primitive.ObjectID    `bson:"_id,omitempty"`
+    Name      string                `bson:"name" validate:"required"`
+    Email     string                `bson:"email" validate:"required"`
+    Role      string                `bson:"role,omitempty"`
+    Orders    []primitive.ObjectID  `bson:"orders,omitempty"`
+    Password  string                `bson:"password" validate:"required"`
+    CreatedAt primitive.DateTime    `bson:"created_at,omitempty"`
 }
 
 // Check Email Validation
