@@ -7,11 +7,16 @@ import (
 	"github.com/JongSinister/TeeYai_2024/config"
 	"github.com/JongSinister/TeeYai_2024/routes"
 
-	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
 )
 
+
+
 func main() {
+
+    // Init Fiber
+    app := fiber.New()
 
     if err := godotenv.Load("../config/.env"); err != nil {
         log.Fatalf("Error loading .env file: %v", err)
@@ -21,8 +26,8 @@ func main() {
     config.ConnectDB()
     defer config.DisconnectDB()
 
-    // Init Fiber
-    app := fiber.New()
+    // Initialize database
+    config.InitDB()
 
     // Set routes
     routes.Setup(app)

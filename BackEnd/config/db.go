@@ -11,7 +11,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
-var DB *mongo.Client
+var clt *mongo.Client
+var DB *mongo.Database
 
 func ConnectDB() {
     uri := os.Getenv("MONGODB_URI")
@@ -30,7 +31,7 @@ func ConnectDB() {
         log.Fatal("Could not ping MongoDB: ", err)
     }
 
-    DB = client
+    clt = client
     log.Println("Connected to MongoDB")
 }
 
@@ -38,8 +39,12 @@ func DisconnectDB() {
     ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
     defer cancel()
 
-    if err := DB.Disconnect(ctx); err != nil {
+    if err := clt.Disconnect(ctx); err != nil {
         log.Fatal("Error disconnecting from MongoDB: ", err)
     }
     log.Println("Disconnected from MongoDB")
+}
+
+func InitDB() {
+    DB = clt.Database("Teeyai")
 }
