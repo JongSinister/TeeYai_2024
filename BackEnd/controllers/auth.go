@@ -86,10 +86,16 @@ func Login(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"message": "Invalid credentials"})
 	}
 
+	// Generate JWT token
+	token, err := loggedInUser.GenerateToken(os.Getenv("JWT_SECRET"))
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).SendString("Error generating token")
+	}
 	
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"message": "Login successful",
 		"username":    targetUser.Name,
+		"token": token,
 	})
 }
 
