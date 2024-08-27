@@ -101,9 +101,13 @@ func DeleteOrder(c *fiber.Ctx) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	_, err = config.DB.Collection(orderCollection).DeleteOne(ctx, bson.M{"_id": objectID})
+	res, err := config.DB.Collection(orderCollection).DeleteOne(ctx, bson.M{"_id": objectID})
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
+	}
+	
+	if res.DeletedCount == 0 {
+		return c.Status(fiber.StatusNotFound).SendString("Order not found")
 	}
 
 	return c.SendString("Order deleted successfully")

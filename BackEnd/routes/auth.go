@@ -5,9 +5,9 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func OrderRoutes(router fiber.Router) {
-	router.Get("/", controllers.GetOrders)
-	router.Post("/", controllers.AddOrder)
-	router.Get("/:id", controllers.GetOrder)
-	router.Delete("/:id", controllers.DeleteOrder)
+func AuthRoutes(router fiber.Router) {
+	router.Post("/register", controllers.Register)
+	router.Post("/login", controllers.Login)
+	router.Get("/me", controllers.Me)
+	router.Post("/logout", controllers.Logout)
 }
