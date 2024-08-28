@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"context"
+	"log"
 	"os"
 	"time"
 
@@ -20,7 +21,7 @@ const userCollection = "User"
 // @access  Public
 func Register(c *fiber.Ctx) error {
 	var user models.User
-
+	log.Println("Registering user")
 	if err := c.BodyParser(&user); err != nil {
 		return c.Status(fiber.StatusBadRequest).SendString("Invalid request format")
 	}

@@ -59,6 +59,7 @@ func GetOrder(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 
+
 	return c.JSON(order)
 }
 
