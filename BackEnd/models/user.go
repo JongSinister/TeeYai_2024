@@ -1,7 +1,6 @@
 package models
 
 import (
-	"os"
 	"regexp"
 	"time"
 
@@ -45,17 +44,15 @@ func (user *User) CheckPassword(password string) bool {
 
 // GenerateToken generates a JWT token for the user
 func (user *User) GenerateToken(secret string) (string, error) {
-	token := jwt.New(jwt.SigningMethodHS256)
+    token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+        "email": user.Email,
+        "role": user.Role,
+        "exp": time.Now().Add(time.Hour * 72).Unix(),
+    })
 
-    // set claims
-    claims := token.Claims.(jwt.MapClaims)
-    claims["email"] = user.Email
-    claims["role"] = user.Role
-    claims["exp"] = time.Now().Add(time.Hour * 72).Unix()
-    
-    t, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
+    tokenString, err := token.SignedString([]byte(secret))
     if err != nil {
         return "", err
     }
-    return t, nil
+    return tokenString, nil
 }

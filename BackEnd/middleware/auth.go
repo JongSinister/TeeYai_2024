@@ -11,7 +11,7 @@ import (
 func Protect(c *fiber.Ctx) error {
 	authHeader := c.Get("Authorization")
 	if authHeader == "" {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"message": "No token provided"})
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"message": "No token provided, please Login or Register first"})
 	}
 
 	tokenString := authHeader[len("Bearer "):]
