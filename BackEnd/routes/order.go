@@ -7,8 +7,10 @@ import (
 )
 
 func OrderRoutes(router fiber.Router) {
-	router.Get("/", controllers.GetOrders, middleware.Protect, middleware.Authorize("admin"))
-	router.Post("/", controllers.AddOrder, middleware.Protect)
-	router.Get("/:id", controllers.GetOrder, middleware.Protect)
-	router.Delete("/:id", controllers.DeleteOrder, middleware.Protect, middleware.Authorize("admin"))
+	router.Use(middleware.Protect)
+
+	router.Get("/", middleware.Protect, middleware.Authorize("admin"), controllers.GetOrders)
+	router.Post("/", middleware.Protect, controllers.AddOrder)
+	router.Get("/:id", middleware.Protect, controllers.GetOrder)
+	router.Delete("/:id", middleware.Protect, middleware.Authorize("admin"), controllers.DeleteOrder)
 }

@@ -20,35 +20,39 @@ type User struct {
 }
 
 // Check Email Validation
-func (h *User) ValidateEmail() bool {
+func (user *User) ValidateEmail() bool {
     regex := `^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$`
     re := regexp.MustCompile(regex)
-    return re.MatchString(h.Email)
+    return re.MatchString(user.Email)
 }
 
 // HashPassword hashes the user's password using bcrypt
-func (u *User) HashPassword() error {
-	hash, err := bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.DefaultCost)
+func (user *User) HashPassword() error {
+	hash, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return err
 	}
-	u.Password = string(hash)
+	user.Password = string(hash)
 	return nil
 }
 
 // CheckPassword compares a hashed password with the provided password
-func (u *User) CheckPassword(password string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password))
+func (user *User) CheckPassword(password string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 	return err == nil
 }
 
 // GenerateToken generates a JWT token for the user
-func (u *User) GenerateToken(secret string) (string, error) {
-	claims := jwt.MapClaims{
-		"id":   u.UserID,
-		"role": u.Role,
-		"exp":  time.Now().Add(time.Hour * 72).Unix(),
-	}
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString([]byte(secret))
+func (user *User) GenerateToken(secret string) (string, error) {
+    token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+        "email": user.Email,
+        "role": user.Role,
+        "exp": time.Now().Add(time.Hour * 72).Unix(),
+    })
+
+    tokenString, err := token.SignedString([]byte(secret))
+    if err != nil {
+        return "", err
+    }
+    return tokenString, nil
 }

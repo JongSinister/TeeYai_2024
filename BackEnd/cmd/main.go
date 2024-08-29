@@ -5,10 +5,8 @@ import (
 	"os"
 
 	"github.com/JongSinister/TeeYai_2024/config"
-	"github.com/JongSinister/TeeYai_2024/middleware"
 	"github.com/JongSinister/TeeYai_2024/routes"
 	"github.com/gofiber/fiber/v2"
-	jwtware "github.com/gofiber/jwt/v2"
 	"github.com/joho/godotenv"
 )
 
@@ -18,13 +16,13 @@ func main() {
 
     // Init Fiber
     app := fiber.New()
-    	// Global middleware
-	app.Use(jwtware.New(jwtware.Config{
-		SigningKey: []byte(os.Getenv("JWT_SECRET")),
-	}))
+
+	// app.Use(jwtware.New(jwtware.Config{
+	// 	SigningKey: []byte(os.Getenv("JWT_SECRET")),
+	// }))
 
 	// Apply the Protect middleware globally if needed
-	app.Use(middleware.Protect)
+	// app.Use(middleware.Protect)
 
 
     if err := godotenv.Load("../config/.env"); err != nil {
