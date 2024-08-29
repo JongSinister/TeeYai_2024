@@ -17,6 +17,7 @@ import (
 const userCollection = "User"
 
 
+
 // @desc    Register a new user
 // @route   POST /api/v1/auth/register
 // @access  Public
@@ -139,6 +140,46 @@ func Me(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusOK).JSON(user)
 }
+
+// @desc    Get user orders
+// @route   GET /api/v1/auth/orders
+// @access  Private
+func GetOrdersForUser(c *fiber.Ctx) error {
+	
+	// 1) Get the user's email from the JWT claims
+	userEmail, ok := c.Locals("user").(jwt.MapClaims)["email"].(string)
+	if !ok {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message":"Error fetching user data"})
+	}
+
+	// 2) Find the user in the database by email
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	var user models.User
+	err := config.DB.Collection(userCollection).FindOne(ctx, bson.M{"email": userEmail}).Decode(&user)
+	if err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"message":"User not found"})
+	}
+
+	// 3) Find all orders for the user
+	ctx, cancel = context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	cursor, err := config.DB.Collection(orderCollection).Find(ctx, bson.M{"userID": user.UserID})
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message":"Error fetching orders"})
+	}
+	defer cursor.Close(ctx)
+
+	var orders []models.Order
+	if err := cursor.All(ctx, &orders); err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error":"Error fetching orders"})
+	}
+
+	return c.JSON(orders)
+}
+
 
 
 // @desc    Log user out / clear cookie
