@@ -152,6 +152,8 @@ func GetOrdersForUser(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message":"Error fetching user data"})
 	}
 
+	log.Println("Fetching orders for user: ", userEmail)
+
 	// 2) Find the user in the database by email
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -162,21 +164,18 @@ func GetOrdersForUser(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"message":"User not found"})
 	}
 
-	// 3) Find all orders for the user
-	ctx, cancel = context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	cursor, err := config.DB.Collection(orderCollection).Find(ctx, bson.M{"userID": user.UserID})
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message":"Error fetching orders"})
+	log.Println("User orders ID: ", user.Orders)
+	// 3) For all orders in the user's orders array, find the order in the database
+	var orders []map[string]int
+	for _, orderID := range user.Orders {
+		var order models.Order
+		err := config.DB.Collection("Order").FindOne(ctx, bson.M{"_id": orderID}).Decode(&order)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message":"Failed to fetch order"})
+		}
+		orders = append(orders, order.FoodList)
 	}
-	defer cursor.Close(ctx)
-
-	var orders []models.Order
-	if err := cursor.All(ctx, &orders); err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error":"Error fetching orders"})
-	}
-
+	
 	return c.JSON(orders)
 }
 
