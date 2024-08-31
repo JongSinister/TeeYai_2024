@@ -17,14 +17,7 @@ func main() {
     // Init Fiber
     app := fiber.New()
 
-	// app.Use(jwtware.New(jwtware.Config{
-	// 	SigningKey: []byte(os.Getenv("JWT_SECRET")),
-	// }))
-
-	// Apply the Protect middleware globally if needed
-	// app.Use(middleware.Protect)
-
-
+    // Load .env file
     if err := godotenv.Load("../config/.env"); err != nil {
         log.Fatalf("Error loading .env file: %v", err)
     }
