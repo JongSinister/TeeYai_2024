@@ -1,12 +1,10 @@
 "use client";
 import React, { useState } from "react";
 import FoodItem from "./FoodItem";
+import CurrentOrderPopupList from "./CurrentOrderPopupList";
 
 type FoodCounts = {
-  Bocchi: number;
-  Kita: number;
-  Ryo: number;
-  Nijika: number;
+  [key: string]: number; // Allows for dynamic food names
 };
 
 export default function FoodList() {
@@ -17,29 +15,95 @@ export default function FoodList() {
     Ryo: 0,
     Nijika: 0,
   });
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
 
-  const handleAmountChange = (foodName: keyof FoodCounts, delta: number) => {
+  const handleAmountChange = (foodName: string, delta: number) => {
     setTotalAmount(totalAmount + delta);
-    setFoodCounts({
-      ...foodCounts,
-      [foodName]: foodCounts[foodName] + delta,
-    });
+    setFoodCounts((prevCounts) => ({
+      ...prevCounts,
+      [foodName]: prevCounts[foodName] + delta,
+    }));
+  };
+
+  const handleSubmitOrder = async () => {
+    const orderData = {
+      FoodList: foodCounts,
+      CreatedAt: new Date().toISOString(),
+    };
+
+    try {
+      const response = await fetch("http://localhost:8080/api/v1/orders", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(orderData),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to submit order");
+      }
+      const result = await response.json();
+      console.log("Order submitted:", result);
+
+      /* Reset food counts and total amount after successful order submission */
+      const resetCounts = Object.keys(foodCounts).reduce((acc, key) => {
+        acc[key] = 0;
+        return acc;
+      }, {} as FoodCounts);
+
+      setFoodCounts(resetCounts);
+      setTotalAmount(0);
+      /* Error handling for fetch request */
+    } catch (error) {
+      console.error("Error submitting order:", error);
+    }
+  };
+
+  const handleRemoveItem = (foodName: string) => {
+    setFoodCounts((prevCounts) => ({
+      ...prevCounts,
+      [foodName]: 0, // Set the item count to 0 to effectively remove it
+    }));
   };
 
   return (
-    <div className="flex flex-col justify-center items-center bg-indigo-800 rounded-lg px-4">
-      <h1 className="text-white text-2xl mb-4">Total Amount: {totalAmount}</h1>
-      <div className="text-white mb-4">
-        {Object.entries(foodCounts).map(([foodName, count]) => (
-          <p key={foodName}>
-            {foodName}: {count}
-          </p>
-        ))}
+    <div className="flex flex-col justify-center items-center bg-indigo-800 rounded-lg px-4 py-4">
+      {Object.entries(foodCounts).map(([foodName]) => (
+        <FoodItem
+          key={foodName}
+          foodName={foodName}
+          imgSrc={`/img/${foodName.toLowerCase()}.jpg`}
+          amount={foodCounts[foodName]}
+          onAmountChange={(delta) => handleAmountChange(foodName, delta)}
+        />
+      ))}
+      <div className="flex flex-col items-center">
+        <div>
+          <button
+            className="w-[150px] h-[40px] bg-green-500 rounded-lg mt-3 mr-2 text-white font-bold transition-transform transform hover:scale-105 active:scale-95 focus:outline-none"
+            onClick={handleSubmitOrder}
+          >
+            Submit Order
+          </button>
+          <button
+            className="w-[150px] h-[40px] bg-sky-500 rounded-lg mt-3 ml-2 text-white font-bold transition-transform transform hover:scale-105 active:scale-95 focus:outline-none"
+            onClick={() => setIsPopupOpen(true)}
+          >
+            Order List
+          </button>
+        </div>
+        <button className="block w-full h-[30px] bg-slate-400 rounded-lg mt-3 mx-2 text-white font-bold transition-transform transform hover:scale-105 active:scale-95 focus:outline-none">
+          Order History
+        </button>
       </div>
-      <FoodItem foodName="Bocchi" imgSrc="/img/bocchides.jpg" amount={0} onAmountChange={(delta) => handleAmountChange('Bocchi', delta)} />
-      <FoodItem foodName="Kita" imgSrc="/img/kitathisisbass.jpg" amount={0} onAmountChange={(delta) => handleAmountChange('Kita', delta)} />
-      <FoodItem foodName="Ryo" imgSrc="/img/ryothumbup.jpg" amount={0} onAmountChange={(delta) => handleAmountChange('Ryo', delta)} />
-      <FoodItem foodName="Nijika" imgSrc="/img/nijikaleaf.jpg" amount={0} onAmountChange={(delta) => handleAmountChange('Nijika', delta)} />
+      {isPopupOpen && (
+        <CurrentOrderPopupList
+          foodCounts={foodCounts}
+          onClose={() => setIsPopupOpen(false)}
+          onRemoveItem={handleRemoveItem}
+        />
+      )}
     </div>
   );
 }

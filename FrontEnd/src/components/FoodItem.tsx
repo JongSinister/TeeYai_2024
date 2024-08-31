@@ -40,21 +40,21 @@ export default function FoodItem({
         <div className="flex flex-col">
           <div className="flex items-center mt-2">
             <button
-              className="w-[30px] h-[30px] bg-blue-300 rounded-md mx-2 font-semibold"
+              className="w-[30px] h-[30px] bg-blue-300 rounded-md mx-2 font-semibold transition-transform transform hover:scale-110 active:scale-90 focus:outline-none"
               onClick={decreaseCount}
             >
               -
             </button>
             <p className="mx-1 w-[10px] text-center">{count}</p>
             <button
-              className="w-[30px] h-[30px] bg-blue-300 rounded-md mx-2 font-semibold"
+              className="w-[30px] h-[30px] bg-blue-300 rounded-md mx-2 font-semibold transition-transform transform hover:scale-110 active:scale-90 focus:outline-none"
               onClick={increaseCount}
             >
               +
             </button>
           </div>
           <button
-            className="w-[100px] h-[30px] bg-blue-300 rounded-md mt-2 mx-auto font-semibold px-1 text-sm"
+            className="w-[100px] h-[30px] bg-blue-300 rounded-md mt-2 mx-auto font-semibold px-1 text-sm transition-transform transform hover:scale-105 active:scale-95 focus:outline-none"
             onClick={handleAddToOrder}
           >
             Add to Order
