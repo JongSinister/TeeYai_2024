@@ -9,6 +9,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 const orderCollection = "Order"
@@ -18,11 +19,15 @@ const orderCollection = "Order"
 //@access  Private
 func GetOrders(c *fiber.Ctx) error {
 
-	// Fetch all orders from the database
+	// 1) Prepare the query to fetch all orders
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	cursor, err := config.DB.Collection(orderCollection).Find(ctx, bson.M{})
+	// 2) Sort the orders by the created_at field in descending order
+	opts := options.Find().SetSort(bson.D{{Key: "created_at", Value: -1}})
+	
+	// 3) Fetch all orders from the database
+	cursor, err := config.DB.Collection(orderCollection).Find(ctx, bson.M{}, opts)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": "Error fetching orders"})
 	}
@@ -30,10 +35,15 @@ func GetOrders(c *fiber.Ctx) error {
 
 	var orders []models.Order
 	
+	// 4) Iterate over the cursor and decode each order
 	if err := cursor.All(ctx, &orders); err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
 			"error": "Error fetching orders",
 		})
+	}
+
+	if len(orders) == 0 {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "No orders found"})
 	}
 
 	return c.JSON(orders)
@@ -130,6 +140,17 @@ func DeleteOrder(c *fiber.Ctx) error {
 	if res.DeletedCount == 0 {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"message": "error"})
 	}
+
+	// 3) After the order is deleted, remove the order ID from the user's orders array
+	ctx, cancel = context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	
+	_, err = config.DB.Collection(userCollection).UpdateOne(ctx, bson.M{"orders": objectID}, bson.M{"$pull": bson.M{"orders": objectID}})
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": "Error updating user orders"})
+	}
+
+	
 
 	return c.JSON(fiber.Map{"message": "Order deleted successfully"})
 }

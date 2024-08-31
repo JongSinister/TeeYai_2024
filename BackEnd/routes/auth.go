@@ -7,9 +7,21 @@ import (
 )
 
 func AuthRoutes(router fiber.Router) {
-	router.Post("/register", controllers.Register)
-	router.Post("/login", controllers.Login)
-	router.Get("/me", middleware.Protect, controllers.Me)
-	router.Post("/logout", controllers.Logout)
-	router.Get("/orders", middleware.Protect, controllers.GetOrdersForUser)
+
+	router.Post("/register", 
+				controllers.Register)
+
+	router.Post("/login", 
+				controllers.Login)
+
+	router.Get("/me", 
+				middleware.Protect, 
+				controllers.Me)
+
+	router.Post("/logout",
+				controllers.Logout)
+
+	router.Get("/orders", 
+				middleware.Protect, 
+				controllers.GetOrdersForUser)
 }

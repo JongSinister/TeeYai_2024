@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"context"
-	"log"
 	"os"
 	"time"
 
@@ -25,7 +24,6 @@ func Register(c *fiber.Ctx) error {
 
 	// 1) Parse the request body into a User struct
 	var user models.User
-	log.Println("Registering user")
 	if err := c.BodyParser(&user); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message":"Invalid request format"})
 	}
@@ -108,7 +106,7 @@ func Login(c *fiber.Ctx) error {
 	}
 
 	// 5) Generate JWT token
-	token, err := loggedInUser.GenerateToken(os.Getenv("JWT_SECRET"))
+	token, err := targetUser.GenerateToken(os.Getenv("JWT_SECRET"))
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message":"Error generating token"})
 	}
@@ -152,7 +150,6 @@ func GetOrdersForUser(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message":"Error fetching user data"})
 	}
 
-	log.Println("Fetching orders for user: ", userEmail)
 
 	// 2) Find the user in the database by email
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -164,7 +161,6 @@ func GetOrdersForUser(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"message":"User not found"})
 	}
 
-	log.Println("User orders ID: ", user.Orders)
 	// 3) For all orders in the user's orders array, find the order in the database
 	var orders []map[string]int
 	for _, orderID := range user.Orders {
@@ -176,6 +172,10 @@ func GetOrdersForUser(c *fiber.Ctx) error {
 		orders = append(orders, order.FoodList)
 	}
 	
+	if len(orders) == 0 {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"message":"No orders found"})
+	}
+
 	return c.JSON(orders)
 }
 
