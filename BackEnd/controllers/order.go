@@ -9,6 +9,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 const orderCollection = "Order"
@@ -17,22 +18,32 @@ const orderCollection = "Order"
 //@route   GET /api/v1/orders/
 //@access  Private
 func GetOrders(c *fiber.Ctx) error {
+
+	// 1) Prepare the query to fetch all orders
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	// MongoDB cursor to iterate through the documents
-	cursor, err := config.DB.Collection(orderCollection).Find(ctx, bson.M{})
+	// 2) Sort the orders by the created_at field in descending order
+	opts := options.Find().SetSort(bson.D{{Key: "created_at", Value: -1}})
+	
+	// 3) Fetch all orders from the database
+	cursor, err := config.DB.Collection(orderCollection).Find(ctx, bson.M{}, opts)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": "Error fetching orders"})
 	}
 	defer cursor.Close(ctx)
 
 	var orders []models.Order
 	
+	// 4) Iterate over the cursor and decode each order
 	if err := cursor.All(ctx, &orders); err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
 			"error": "Error fetching orders",
 		})
+	}
+
+	if len(orders) == 0 {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "No orders found"})
 	}
 
 	return c.JSON(orders)
@@ -42,13 +53,16 @@ func GetOrders(c *fiber.Ctx) error {
 //@route   GET /api/v1/orders/:id
 //@access  Private
 func GetOrder(c *fiber.Ctx) error {
+
+	// 1) Get the order ID from the URL and convert it to an ObjectID
 	id := c.Params("id")
 
 	objectID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).SendString("Invalid ID format")
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": "Invalid ID format"})
 	}
 
+	// 2) Fetch the order from the database
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -56,34 +70,47 @@ func GetOrder(c *fiber.Ctx) error {
 
 	err = config.DB.Collection(orderCollection).FindOne(ctx, bson.M{"_id": objectID}).Decode(&order)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": "Error fetching order"})
 	}
-
 
 	return c.JSON(order)
 }
+
 
 //@desc    Add order
 //@route   POST /api/v1/orders/
 //@access  Private
 func AddOrder(c *fiber.Ctx) error {
+
+	// 1) Parse the request body into a Order struct
 	var order models.Order
 	if err := c.BodyParser(&order); err != nil {
-		return c.Status(fiber.StatusBadRequest).SendString(err.Error())	
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": "Invalid request format"})	
 	}
 
 	order.CreatedAt = primitive.DateTime(time.Now().UnixNano() / int64(time.Millisecond))
 
+	// 2) Insert the order into the database
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	res, err := config.DB.Collection(orderCollection).InsertOne(ctx, order)
 
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).SendString(err.Error())	
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": "Error creating order"})
 	}
 	 
 	order.OrderID = res.InsertedID.(primitive.ObjectID)
+
+	// 3) After the order is created, add the order ID to the user's orders array
+	ctx, cancel = context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	_, err = config.DB.Collection(userCollection).UpdateOne(ctx, bson.M{"_id": order.UserID}, bson.M{"$push": bson.M{"orders": order.OrderID}})
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": "Error updating user orders"})
+	}
+
 	return c.Status(fiber.StatusCreated).JSON(order)
 }
 
@@ -92,24 +119,38 @@ func AddOrder(c *fiber.Ctx) error {
 //@route   DELETE /api/v1/orders/:id
 //@access  Private
 func DeleteOrder(c *fiber.Ctx) error {
+
+	// 1) Get the order ID from the URL and convert it to an ObjectID
 	id := c.Params("id")
 
 	objectID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).SendString("Invalid ID format")
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": "Invalid ID format"})
 	}
 
+	// 2) Delete the order from the database
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	res, err := config.DB.Collection(orderCollection).DeleteOne(ctx, bson.M{"_id": objectID})
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": "Error deleting order"})
 	}
 	
 	if res.DeletedCount == 0 {
-		return c.Status(fiber.StatusNotFound).SendString("Order not found")
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"message": "error"})
 	}
 
-	return c.SendString("Order deleted successfully")
+	// 3) After the order is deleted, remove the order ID from the user's orders array
+	ctx, cancel = context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	
+	_, err = config.DB.Collection(userCollection).UpdateOne(ctx, bson.M{"orders": objectID}, bson.M{"$pull": bson.M{"orders": objectID}})
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": "Error updating user orders"})
+	}
+
+	
+
+	return c.JSON(fiber.Map{"message": "Order deleted successfully"})
 }

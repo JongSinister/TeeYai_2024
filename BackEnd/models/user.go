@@ -44,12 +44,15 @@ func (user *User) CheckPassword(password string) bool {
 
 // GenerateToken generates a JWT token for the user
 func (user *User) GenerateToken(secret string) (string, error) {
+
+    // 1) Create the token
     token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
         "email": user.Email,
         "role": user.Role,
         "exp": time.Now().Add(time.Hour * 72).Unix(),
     })
 
+    // 2) Sign the token
     tokenString, err := token.SignedString([]byte(secret))
     if err != nil {
         return "", err

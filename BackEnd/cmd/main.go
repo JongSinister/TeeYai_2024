@@ -23,20 +23,15 @@ func main() {
 		AllowHeaders: "Origin, Content-Type, Accept",
 	}))
 
-	// app.Use(jwtware.New(jwtware.Config{
-	// 	SigningKey: []byte(os.Getenv("JWT_SECRET")),
-	// }))
 
-	// Apply the Protect middleware globally if needed
-	// app.Use(middleware.Protect)
+    // Load .env file
+    if err := godotenv.Load("../config/.env"); err != nil {
+        log.Fatalf("Error loading .env file: %v", err)
+    }
 
-	if err := godotenv.Load("../config/.env"); err != nil {
-		log.Fatalf("Error loading .env file: %v", err)
-	}
-
-	// Connect to MongoDB
-	config.ConnectDB()
-	defer config.DisconnectDB()
+    // Connect to MongoDB
+    config.ConnectDB()
+    defer config.DisconnectDB()
 
 	// Initialize database
 	config.InitDB()
