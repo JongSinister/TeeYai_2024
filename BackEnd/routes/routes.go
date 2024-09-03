@@ -11,4 +11,5 @@ func Setup(app *fiber.App) {
     AuthRoutes(api.Group("/auth"))
 
     OrderRoutes(api.Group("/orders"))
+  
 }
