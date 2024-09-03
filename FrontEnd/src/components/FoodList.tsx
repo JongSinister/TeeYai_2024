@@ -27,8 +27,7 @@ export default function FoodList() {
 
   const handleSubmitOrder = async () => {
     const orderData = {
-      FoodList: foodCounts,
-      CreatedAt: new Date().toISOString(),
+      FoodList: foodCounts
     };
 
     try {
