@@ -2,6 +2,7 @@ package routes
 
 import (
 	"github.com/JongSinister/TeeYai_2024/controllers"
+	"github.com/JongSinister/TeeYai_2024/middleware"
 	"github.com/gofiber/fiber/v2"
 )
 
