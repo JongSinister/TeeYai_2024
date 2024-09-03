@@ -7,6 +7,7 @@ import (
 	"github.com/JongSinister/TeeYai_2024/config"
 	"github.com/JongSinister/TeeYai_2024/models"
 	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt/v4"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -39,6 +40,7 @@ func GetOrders(c *fiber.Ctx) error {
 	if err := cursor.All(ctx, &orders); err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
 			"error": "Error fetching orders",
+			"msg": err,
 		})
 	}
 
@@ -82,16 +84,35 @@ func GetOrder(c *fiber.Ctx) error {
 //@access  Private
 func AddOrder(c *fiber.Ctx) error {
 
-	// 1) Parse the request body into a Order struct
+	// 1) Get the user's email from the JWT claims
+	userEmail, ok := c.Locals("user").(jwt.MapClaims)["email"].(string)
+	if !ok {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message":"Error fetching user data"})
+	}
+
+	// 1) Fetch the user from the database
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	var user models.User
+	err := config.DB.Collection(userCollection).FindOne(ctx, bson.M{"email": userEmail}).Decode(&user)
+
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": "Error fetching user data"})
+	}
+
+	// 2) Parse the request body into a Order struct
 	var order models.Order
 	if err := c.BodyParser(&order); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": "Invalid request format"})	
 	}
 
+	// 3) get the user ID from the user object, add created_at timestamp to the order
+	order.UserID = user.UserID
 	order.CreatedAt = primitive.DateTime(time.Now().UnixNano() / int64(time.Millisecond))
 
-	// 2) Insert the order into the database
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	// 4) Insert the order into the database
+	ctx, cancel = context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	res, err := config.DB.Collection(orderCollection).InsertOne(ctx, order)
@@ -102,7 +123,7 @@ func AddOrder(c *fiber.Ctx) error {
 	 
 	order.OrderID = res.InsertedID.(primitive.ObjectID)
 
-	// 3) After the order is created, add the order ID to the user's orders array
+	// 5) After the order is created, add the order ID to the user's orders array
 	ctx, cancel = context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
