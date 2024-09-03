@@ -19,19 +19,18 @@ func main() {
 	// Apply CORS middleware
 	app.Use(cors.New(cors.Config{
 		AllowOrigins: "http://localhost:3000", // Adjust this to match your frontend origin
-		AllowMethods: "GET,POST,PUT,DELETE,OPTIONS",
-		AllowHeaders: "Origin, Content-Type, Accept",
+		AllowMethods: "GET, POST, PUT, PATCH, DELETE, OPTIONS",
+		AllowHeaders: "Origin, Content-Type, Accept, Authorization",
 	}))
 
+	// Load .env file
+	if err := godotenv.Load("../config/.env"); err != nil {
+		log.Fatalf("Error loading .env file: %v", err)
+	}
 
-    // Load .env file
-    if err := godotenv.Load("../config/.env"); err != nil {
-        log.Fatalf("Error loading .env file: %v", err)
-    }
-
-    // Connect to MongoDB
-    config.ConnectDB()
-    defer config.DisconnectDB()
+	// Connect to MongoDB
+	config.ConnectDB()
+	defer config.DisconnectDB()
 
 	// Initialize database
 	config.InitDB()

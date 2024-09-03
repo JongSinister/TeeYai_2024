@@ -15,7 +15,7 @@ export default function Home() {
     e.preventDefault();
     setError("");
     setSuccessMessage("");
-
+  
     try {
       const response = await fetch("http://localhost:8080/api/v1/auth/login", {
         method: "POST",
@@ -24,9 +24,9 @@ export default function Home() {
         },
         body: JSON.stringify({ email, password }),
       });
-
+  
       const data = await response.json();
-
+  
       if (response.ok) {
         setSuccessMessage("Login successful!");
         localStorage.setItem("token", data.token);
@@ -39,6 +39,7 @@ export default function Home() {
       setError("An error occurred while logging in. Please try again later.");
     }
   };
+  
 
   return (
     <div className={styles.main}>

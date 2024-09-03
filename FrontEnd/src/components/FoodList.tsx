@@ -32,10 +32,13 @@ export default function FoodList() {
     };
 
     try {
+      const token = localStorage.getItem("token");
+
       const response = await fetch("http://localhost:8080/api/v1/orders", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // Include token for authenticated requests
         },
         body: JSON.stringify(orderData),
       });
