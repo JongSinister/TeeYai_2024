@@ -1,6 +1,6 @@
 "use client";
 import { useState, FormEvent } from "react";
-import { useRouter } from 'next/navigation';
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import styles from "./page.module.css";
 
@@ -11,11 +11,36 @@ export default function Home() {
   const [successMessage, setSuccessMessage] = useState("");
   const router = useRouter();
 
+  //handle getMe function param is data object from login
+  const handleGetMe = async (token: string) => {
+    try {
+      const response = await fetch("http://localhost:8080/api/v1/auth/me", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch user data.");
+      }
+
+      const userData = await response.json();
+      return userData.Role;
+    } catch (e) {
+      setError(
+        "An error occurred while fetching user data. Please try again later."
+      );
+      return undefined; // Return undefined in case of an error
+    }
+  };
+
   const handleLogin = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
     setError("");
     setSuccessMessage("");
-  
+
     try {
       const response = await fetch("http://localhost:8080/api/v1/auth/login", {
         method: "POST",
@@ -24,22 +49,32 @@ export default function Home() {
         },
         body: JSON.stringify({ email, password }),
       });
-  
+
       const data = await response.json();
-  
       if (response.ok) {
         setSuccessMessage("Login successful!");
         localStorage.setItem("token", data.token);
         localStorage.setItem("userID", data.userID); // Save userID
         router.push("/user");
+
+        // Redirect based on user role
+        const role = await handleGetMe(data.token);
+        if (role === "admin") {
+          router.push("/admin");
+        } else if (role === "user") {
+          router.push("/user");
+        } else {
+          setError("Role not found");
+        }
       } else {
-        setError(data.message || "Login failed. Please check your credentials.");
+        setError(
+          data.message || "Login failed. Please check your credentials."
+        );
       }
     } catch (error) {
       setError("An error occurred while logging in. Please try again later.");
     }
   };
-  
 
   return (
     <div className={styles.main}>
@@ -52,10 +87,7 @@ export default function Home() {
           priority
         />
         <h1 className="text-xl font-bold mb-4 text-white">Login</h1>
-        <form
-          onSubmit={handleLogin}
-          className="flex flex-col w-full max-w-xs"
-        >
+        <form onSubmit={handleLogin} className="flex flex-col w-full max-w-xs">
           <input
             className="w-full h-[30px] mb-3 px-2 rounded-md text-sm"
             type="text"
@@ -79,7 +111,9 @@ export default function Home() {
             Login
           </button>
           {error && <div className="mt-3 text-red-400">{error}</div>}
-          {successMessage && <div className="mt-3 text-green-400">{successMessage}</div>}
+          {successMessage && (
+            <div className="mt-3 text-green-400">{successMessage}</div>
+          )}
         </form>
       </div>
     </div>
