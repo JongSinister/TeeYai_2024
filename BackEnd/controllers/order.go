@@ -109,6 +109,7 @@ func AddOrder(c *fiber.Ctx) error {
 
 	// 3) get the user ID from the user object, add created_at timestamp to the order
 	order.UserID = user.UserID
+	order.UserName = user.Name
 	order.CreatedAt = primitive.DateTime(time.Now().UnixNano() / int64(time.Millisecond))
 
 	// 4) Insert the order into the database

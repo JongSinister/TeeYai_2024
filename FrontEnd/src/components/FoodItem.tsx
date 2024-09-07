@@ -1,7 +1,6 @@
 "use client";
 import React, { useState } from "react";
 import Image from "next/image";
-
 export default function FoodItem({
   foodName,
   imgSrc,
@@ -16,12 +15,12 @@ export default function FoodItem({
   const [count, setCount] = useState(amount);
 
   const increaseCount = () => {
-    setCount(prevCount => prevCount + 1);
+    setCount((prevCount) => prevCount + 1);
   };
 
   const decreaseCount = () => {
     if (count > 0) {
-      setCount(prevCount => prevCount - 1);
+      setCount((prevCount) => prevCount - 1);
     }
   };
 

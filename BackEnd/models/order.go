@@ -6,7 +6,8 @@ import (
 
 type Order struct {
     OrderID   primitive.ObjectID       `bson:"_id,omitempty"`          
-    UserID    primitive.ObjectID       `bson:"userid" validate:"required"`       
+    UserID    primitive.ObjectID       `bson:"userid" validate:"required"`    
+    UserName  string                   `bson:"userName" validate:"required"`   
     FoodList  map[string]int           `bson:"foodList" validate:"required"`     
     CreatedAt primitive.DateTime       `bson:"createdAt" validate:"required"`   
 }
