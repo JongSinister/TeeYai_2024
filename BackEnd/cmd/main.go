@@ -12,6 +12,9 @@ import (
 	"github.com/joho/godotenv"
 )
 
+// To run backend, use this command in backEnd folder
+// CompileDaemon --build="go build -o ./TeeYai.exe main.go" --command=./cmd/TeeYai.exe --directory=./cmd
+
 func main() {
 
 	// Get the current working directory
