@@ -9,6 +9,7 @@ type FoodList = {
 type Order = {
   OrderID: string;
   UserID: string;
+  UserName: string;
   FoodList: FoodList;
   CreatedAt: string;
 };
@@ -25,7 +26,7 @@ export default function OrderList() {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
       });
 
@@ -36,7 +37,9 @@ export default function OrderList() {
       const data: Order[] = await response.json();
       setOrders(data);
     } catch (error) {
-      setError("An error occurred while fetching orders. Please try again later.");
+      setError(
+        "An error occurred while fetching orders. Please try again later."
+      );
     }
   };
 
@@ -45,7 +48,9 @@ export default function OrderList() {
   }, []);
 
   const handleDelete = (orderId: string) => {
-    setOrders((prevOrders) => prevOrders.filter(order => order.OrderID !== orderId));
+    setOrders((prevOrders) =>
+      prevOrders.filter((order) => order.OrderID !== orderId)
+    );
   };
 
   return (
@@ -53,10 +58,9 @@ export default function OrderList() {
       {error && <div>{error}</div>}
       <ul className="flex space-x-4 p-4 w-max">
         {orders
-          .sort((a, b) => new Date(b.CreatedAt).getTime() - new Date(a.CreatedAt).getTime())
           .map((order) => (
             <li key={order.OrderID} className="flex-shrink-0">
-              <OrderCard order={order} onDelete={handleDelete}/>
+              <OrderCard order={order} onDelete={handleDelete} />
             </li>
           ))}
       </ul>

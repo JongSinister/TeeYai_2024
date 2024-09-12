@@ -8,13 +8,14 @@ type FoodList = {
 type Order = {
   OrderID: string;
   UserID: string;
+  UserName: string;
   FoodList: FoodList;
   CreatedAt: string;
 };
 
 interface OrderCardProps {
   order: Order;
-  onDelete: (orderId: string) => void; // Add a callback function prop
+  onDelete: (orderId: string) => void;
 }
 
 export default function OrderCard({ order, onDelete }: OrderCardProps) {
@@ -63,22 +64,34 @@ export default function OrderCard({ order, onDelete }: OrderCardProps) {
         throw new Error("Failed to delete order.");
       }
 
-      // Notify the parent component of the deletion
       onDelete(order.OrderID);
-      togglePopup(); // Close the popup after deletion
+      togglePopup();
     } catch (error) {
       console.error("An error occurred while deleting the order:", error);
     }
   };
 
+  const formattedDate = new Date(order.CreatedAt).toLocaleDateString(undefined, {
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+  });
+  const formattedTime = new Date(order.CreatedAt).toLocaleTimeString(undefined, {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
   return (
-    <div className="bg-white rounded-md p-4 shadow-md w-[200px] flex flex-col items-center relative">
-      <div className="text-sm">{order.OrderID}</div>
+    <div className="bg-white rounded-md p-4 shadow-md w-[250px] flex flex-col items-center relative">
+      <div className="text-sm font-semibold">{order.UserName}</div>
+      <div className="text-xs text-center mb-2">
+        OrderDate:{formattedTime} , {formattedDate}
+      </div>
       {allChecked && (
         <div className="absolute top-1 left-1 w-2 h-2 bg-green-500 rounded-full"></div>
       )}
       <button
-        className="mt-4 p-2 bg-blue-500 text-white rounded-md"
+        className="p-2 bg-blue-500 text-white rounded-md"
         onClick={togglePopup}
       >
         View Order
