@@ -1,7 +1,7 @@
 import React from 'react';
 
 type FoodCounts = {
-  [key: string]: number; // Allows for dynamic food names
+  [key: string]: number;
 };
 
 type CurrentOrderPopupListProps = {

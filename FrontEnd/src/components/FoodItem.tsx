@@ -14,7 +14,7 @@ export default function FoodItem({
   onAmountChange: (delta: number) => void;
 }) {
   const [count, setCount] = useState(amount);
-  const [showAlert, setShowAlert] = useState(false); // State to control alert visibility
+  const [showAlert, setShowAlert] = useState(false);
 
   const increaseCount = () => {
     setCount((prevCount) => prevCount + 1);

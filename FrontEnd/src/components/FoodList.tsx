@@ -2,10 +2,10 @@
 import React, { useState } from "react";
 import FoodItem from "./FoodItem";
 import CurrentOrderPopupList from "./CurrentOrderPopupList";
-import OrderHistoryPopup from "./OrderHistoryPopup"; // Import OrderHistoryPopup component
+import OrderHistoryPopup from "./OrderHistoryPopup";
 
 type FoodCounts = {
-  [key: string]: number; // Allows for dynamic food names
+  [key: string]: number;
 };
 
 export default function FoodList() {
@@ -17,9 +17,9 @@ export default function FoodList() {
     Nijika: 0,
   });
   const [isOrderListPopupOpen, setIsOrderListPopupOpen] = useState(false);
-  const [isOrderHistoryPopupOpen, setIsOrderHistoryPopupOpen] = useState(false); // Popup state for order history
-  const [orderHistory, setOrderHistory] = useState<any[]>([]); // Store order history data
-  const [notificationVisible, setNotificationVisible] = useState(false); // State for notification visibility
+  const [isOrderHistoryPopupOpen, setIsOrderHistoryPopupOpen] = useState(false);
+  const [orderHistory, setOrderHistory] = useState<any[]>([]);
+  const [notificationVisible, setNotificationVisible] = useState(false);
 
   const handleAmountChange = (foodName: string, delta: number) => {
     setTotalAmount(totalAmount + delta);
@@ -32,13 +32,13 @@ export default function FoodList() {
   const handleRemoveItem = (foodName: string) => {
     setFoodCounts((prevCounts) => ({
       ...prevCounts,
-      [foodName]: 0, // Set the item count to 0 to effectively remove it
+      [foodName]: 0,
     }));
   };
 
   const handleSubmitOrder = async () => {
     const orderData = {
-      FoodList: foodCounts
+      FoodList: foodCounts,
     };
 
     try {
@@ -48,7 +48,7 @@ export default function FoodList() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`, // Include token for authenticated requests
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(orderData),
       });
@@ -89,11 +89,11 @@ export default function FoodList() {
           Authorization: `Bearer ${token}`,
         },
       });
-  
+
       if (!response.ok) {
         throw new Error("Failed to fetch order history.");
       }
-  
+
       const orders = await response.json();
       return orders;
     } catch (e) {
@@ -101,23 +101,22 @@ export default function FoodList() {
       return [];
     }
   };
-  
+
   const handleShowOrderHistory = async () => {
     const token = localStorage.getItem("token");
-  
+
     if (!token) {
       console.error("No token found.");
       return;
     }
-  
-    const orders = await handleGetOrderHistory(token); // Fetch order history with food lists
+
+    const orders = await handleGetOrderHistory(token);
     setOrderHistory(orders);
     setIsOrderHistoryPopupOpen(true);
   };
-  
 
   return (
-    <div className="relative flex flex-col justify-center items-center bg-indigo-800 rounded-lg px-4 py-4">
+    <div className="relative flex flex-col justify-center items-center bg-gray-400/60 backdrop-blur-md rounded-lg px-6 py-6 border border-gray-300 shadow-md">
       {Object.entries(foodCounts).map(([foodName]) => (
         <FoodItem
           key={foodName}

@@ -71,15 +71,22 @@ export default function OrderCard({ order, onDelete }: OrderCardProps) {
     }
   };
 
-  const formattedDate = new Date(order.CreatedAt).toLocaleDateString(undefined, {
-    year: "numeric",
-    month: "numeric",
-    day: "numeric",
-  });
-  const formattedTime = new Date(order.CreatedAt).toLocaleTimeString(undefined, {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  const formattedDate = new Date(order.CreatedAt).toLocaleDateString(
+    undefined,
+    {
+      year: "numeric",
+      month: "numeric",
+      day: "numeric",
+    }
+  );
+
+  const formattedTime = new Date(order.CreatedAt).toLocaleTimeString(
+    undefined,
+    {
+      hour: "2-digit",
+      minute: "2-digit",
+    }
+  );
 
   return (
     <div className="bg-white rounded-md p-4 shadow-md w-[250px] flex flex-col items-center relative">
